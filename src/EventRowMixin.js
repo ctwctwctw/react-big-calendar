@@ -39,6 +39,7 @@ export default {
       slotMetrics,
       components,
       resizable,
+      hoverComponent,
     } = props
 
     let continuesPrior = slotMetrics.continuesPrior(event)
@@ -60,6 +61,7 @@ export default {
         slotEnd={slotMetrics.last}
         selected={isSelected(event, selected)}
         resizable={resizable}
+        hoverComponent={hoverComponent}
       />
     )
   },

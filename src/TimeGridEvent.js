@@ -1,5 +1,6 @@
 import clsx from 'clsx'
-import React from 'react'
+import React, { useState } from 'react'
+import HoverPopupWrapper from './HoverPopupWrapper'
 
 function stringifyPercent(v) {
   return typeof v === 'string' ? v : v + '%'
@@ -7,6 +8,9 @@ function stringifyPercent(v) {
 
 /* eslint-disable react/prop-types */
 function TimeGridEvent(props) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+
   const {
     style,
     className,
@@ -23,6 +27,7 @@ function TimeGridEvent(props) {
     isBackgroundEvent,
     onKeyPress,
     components: { event: Event, eventWrapper: EventWrapper },
+    hoverComponent,
   } = props
   let title = accessors.title(event)
   let tooltip = accessors.tooltip(event)
@@ -50,34 +55,59 @@ function TimeGridEvent(props) {
     [rtl ? 'right' : 'left']: stringifyPercent(xOffset),
   }
 
+  const handleMouseEnter = (e) => {
+    setIsHovered(true)
+    setMousePosition({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleMouseMove = (e) => {
+    if (isHovered) {
+      setMousePosition({ x: e.clientX, y: e.clientY })
+    }
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+  }
+
   return (
-    <EventWrapper type="time" {...props}>
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onClick}
-        onDoubleClick={onDoubleClick}
-        style={eventStyle}
-        onKeyDown={onKeyPress}
-        title={
-          tooltip
-            ? (typeof label === 'string' ? label + ': ' : '') + tooltip
-            : undefined
-        }
-        className={clsx(
-          isBackgroundEvent ? 'rbc-background-event' : 'rbc-event',
-          className,
-          userProps.className,
-          {
-            'rbc-selected': selected,
-            'rbc-event-continues-earlier': continuesPrior,
-            'rbc-event-continues-later': continuesAfter,
+    <HoverPopupWrapper
+      event={event}
+      hoverComponent={hoverComponent}
+      isHovered={isHovered}
+      mousePosition={mousePosition}
+    >
+      <EventWrapper type="time" {...props}>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}
+          style={eventStyle}
+          onKeyDown={onKeyPress}
+          onMouseEnter={handleMouseEnter}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          title={
+            tooltip
+              ? (typeof label === 'string' ? label + ': ' : '') + tooltip
+              : undefined
           }
-        )}
-      >
-        {inner}
-      </div>
-    </EventWrapper>
+          className={clsx(
+            isBackgroundEvent ? 'rbc-background-event' : 'rbc-event',
+            className,
+            userProps.className,
+            {
+              'rbc-selected': selected,
+              'rbc-event-continues-earlier': continuesPrior,
+              'rbc-event-continues-later': continuesAfter,
+            }
+          )}
+        >
+          {inner}
+        </div>
+      </EventWrapper>
+    </HoverPopupWrapper>
   )
 }
 

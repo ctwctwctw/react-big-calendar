@@ -1,8 +1,35 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import clsx from 'clsx'
+import HoverPopupWrapper from './HoverPopupWrapper'
 
 class EventCell extends React.Component {
+  state = {
+    isHovered: false,
+    mousePosition: { x: 0, y: 0 },
+  }
+
+  handleMouseEnter = (e) => {
+    this.setState({
+      isHovered: true,
+      mousePosition: { x: e.clientX, y: e.clientY },
+    })
+  }
+
+  handleMouseMove = (e) => {
+    if (this.state.isHovered) {
+      this.setState({
+        mousePosition: { x: e.clientX, y: e.clientY },
+      })
+    }
+  }
+
+  handleMouseLeave = () => {
+    this.setState({
+      isHovered: false,
+    })
+  }
+
   render() {
     let {
       style,
@@ -22,6 +49,7 @@ class EventCell extends React.Component {
       components: { event: Event, eventWrapper: EventWrapper },
       slotStart,
       slotEnd,
+      hoverComponent,
       ...props
     } = this.props
     delete props.resizable
@@ -59,23 +87,33 @@ class EventCell extends React.Component {
     )
 
     return (
-      <EventWrapper {...this.props} type="date">
-        <div
-          {...props}
-          style={{ ...userProps.style, ...style }}
-          className={clsx('rbc-event', className, userProps.className, {
-            'rbc-selected': selected,
-            'rbc-event-allday': showAsAllDay,
-            'rbc-event-continues-prior': continuesPrior,
-            'rbc-event-continues-after': continuesAfter,
-          })}
-          onClick={(e) => onSelect && onSelect(event, e)}
-          onDoubleClick={(e) => onDoubleClick && onDoubleClick(event, e)}
-          onKeyDown={(e) => onKeyPress && onKeyPress(event, e)}
-        >
-          {typeof children === 'function' ? children(content) : content}
-        </div>
-      </EventWrapper>
+      <HoverPopupWrapper
+        event={event}
+        hoverComponent={hoverComponent}
+        isHovered={this.state.isHovered}
+        mousePosition={this.state.mousePosition}
+      >
+        <EventWrapper {...this.props} type="date">
+          <div
+            {...props}
+            style={{ ...userProps.style, ...style }}
+            className={clsx('rbc-event', className, userProps.className, {
+              'rbc-selected': selected,
+              'rbc-event-allday': showAsAllDay,
+              'rbc-event-continues-prior': continuesPrior,
+              'rbc-event-continues-after': continuesAfter,
+            })}
+            onClick={(e) => onSelect && onSelect(event, e)}
+            onDoubleClick={(e) => onDoubleClick && onDoubleClick(event, e)}
+            onKeyDown={(e) => onKeyPress && onKeyPress(event, e)}
+            onMouseEnter={this.handleMouseEnter}
+            onMouseMove={this.handleMouseMove}
+            onMouseLeave={this.handleMouseLeave}
+          >
+            {typeof children === 'function' ? children(content) : content}
+          </div>
+        </EventWrapper>
+      </HoverPopupWrapper>
     )
   }
 }

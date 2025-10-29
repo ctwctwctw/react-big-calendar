@@ -111,6 +111,7 @@ class MonthView extends React.Component {
       accessors,
       getters,
       showAllEvents,
+      hoverComponent,
     } = this.props
 
     const { needLimitMeasure, rowLimit } = this.state
@@ -154,6 +155,7 @@ class MonthView extends React.Component {
         rtl={this.props.rtl}
         resizable={this.props.resizable}
         showAllEvents={showAllEvents}
+        hoverComponent={hoverComponent}
       />
     )
   }

@@ -830,6 +830,23 @@ class Calendar extends React.Component {
     }),
 
     /**
+     * Callback function that returns a React component to display when hovering over events.
+     * The component receives the event object as a prop.
+     *
+     * ```jsx
+     * const HoverPopup = ({ event }) => (
+     *   <div className="hover-popup">
+     *     <h3>{event.title}</h3>
+     *     <p>{event.description}</p>
+     *   </div>
+     * )
+     *
+     * <Calendar hoverComponent={HoverPopup} />
+     * ```
+     */
+    hoverComponent: PropTypes.elementType,
+
+    /**
      * String messages used throughout the component, override to provide localizations
      *
      * ```jsx
@@ -951,6 +968,7 @@ class Calendar extends React.Component {
     messages = {},
     components = {},
     formats = {},
+    hoverComponent,
   }) {
     let names = viewNames(views)
     const msgs = message(messages)
@@ -990,6 +1008,7 @@ class Calendar extends React.Component {
         resourceTitle: wrapAccessor(resourceTitleAccessor),
         eventId: wrapAccessor(eventIdAccessor),
       },
+      hoverComponent,
     }
   }
 
@@ -1053,8 +1072,14 @@ class Calendar extends React.Component {
     current = current || getNow()
 
     let View = this.getView()
-    const { accessors, components, getters, localizer, viewNames } =
-      this.state.context
+    const {
+      accessors,
+      components,
+      getters,
+      localizer,
+      viewNames,
+      hoverComponent,
+    } = this.state.context
 
     let CalToolbar = components.toolbar || Toolbar
     const label = View.title(current, { localizer, length })
@@ -1098,6 +1123,7 @@ class Calendar extends React.Component {
           onShowMore={onShowMore}
           doShowMoreDrillDown={doShowMoreDrillDown}
           resourceGroupingLayout={resourceGroupingLayout}
+          hoverComponent={hoverComponent}
         />
       </div>
     )

@@ -204,6 +204,7 @@ class DayColumn extends React.Component {
       timeslots,
       dayLayoutAlgorithm,
       resizable,
+      hoverComponent,
     } = this.props
 
     const { slotMetrics } = this
@@ -266,6 +267,7 @@ class DayColumn extends React.Component {
           isBackgroundEvent={isBackgroundEvent}
           onKeyPress={(e) => this._keyPress(event, e)}
           resizable={resizable}
+          hoverComponent={hoverComponent}
         />
       )
     })

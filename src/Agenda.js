@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import addClass from 'dom-helpers/addClass'
 import removeClass from 'dom-helpers/removeClass'
 import getWidth from 'dom-helpers/width'
@@ -8,8 +8,9 @@ import scrollbarSize from 'dom-helpers/scrollbarSize'
 import { navigate } from './utils/constants'
 import { inRange } from './utils/eventLevels'
 import { isSelected } from './utils/selection'
+import HoverPopupWrapper from './HoverPopupWrapper'
 
-const DEFAULT_LENGTH = 30;
+const DEFAULT_LENGTH = 30
 function Agenda({
   accessors,
   components,
@@ -21,6 +22,7 @@ function Agenda({
   onDoubleClickEvent,
   onSelectEvent,
   selected,
+  hoverComponent,
 }) {
   const headerRef = useRef(null)
   const dateColRef = useRef(null)
@@ -32,46 +34,55 @@ function Agenda({
     _adjustHeader()
   })
 
-  const renderDay = (day, events, dayKey) => {
+  const AgendaEventRow = ({ event, idx, dayKey, day, events }) => {
+    const [isHovered, setIsHovered] = useState(false)
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+
+    const handleMouseEnter = (e) => {
+      setIsHovered(true)
+      setMousePosition({ x: e.clientX, y: e.clientY })
+    }
+
+    const handleMouseMove = (e) => {
+      if (isHovered) {
+        setMousePosition({ x: e.clientX, y: e.clientY })
+      }
+    }
+
+    const handleMouseLeave = () => {
+      setIsHovered(false)
+    }
+
     const { event: Event, date: AgendaDate } = components
 
-    events = events.filter((e) =>
-      inRange(
-        e,
-        localizer.startOf(day, 'day'),
-        localizer.endOf(day, 'day'),
-        accessors,
-        localizer
-      )
+    let title = accessors.title(event)
+    let end = accessors.end(event)
+    let start = accessors.start(event)
+
+    const userProps = getters.eventProp(
+      event,
+      start,
+      end,
+      isSelected(event, selected)
     )
 
-    return events.map((event, idx) => {
-      let title = accessors.title(event)
-      let end = accessors.end(event)
-      let start = accessors.start(event)
-
-      const userProps = getters.eventProp(
-        event,
-        start,
-        end,
-        isSelected(event, selected)
+    let dateLabel = idx === 0 && localizer.format(day, 'agendaDateFormat')
+    let first =
+      idx === 0 ? (
+        <td rowSpan={events.length} className="rbc-agenda-date-cell">
+          {AgendaDate ? <AgendaDate day={day} label={dateLabel} /> : dateLabel}
+        </td>
+      ) : (
+        false
       )
 
-      let dateLabel = idx === 0 && localizer.format(day, 'agendaDateFormat')
-      let first =
-        idx === 0 ? (
-          <td rowSpan={events.length} className="rbc-agenda-date-cell">
-            {AgendaDate ? (
-              <AgendaDate day={day} label={dateLabel} />
-            ) : (
-              dateLabel
-            )}
-          </td>
-        ) : (
-          false
-        )
-
-      return (
+    return (
+      <HoverPopupWrapper
+        event={event}
+        hoverComponent={hoverComponent}
+        isHovered={isHovered}
+        mousePosition={mousePosition}
+      >
         <tr
           key={dayKey + '_' + idx}
           className={userProps.className}
@@ -85,12 +96,38 @@ function Agenda({
             onDoubleClick={(e) =>
               onDoubleClickEvent && onDoubleClickEvent(event, e)
             }
+            onMouseEnter={handleMouseEnter}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
           >
             {Event ? <Event event={event} title={title} /> : title}
           </td>
         </tr>
+      </HoverPopupWrapper>
+    )
+  }
+
+  const renderDay = (day, events, dayKey) => {
+    events = events.filter((e) =>
+      inRange(
+        e,
+        localizer.startOf(day, 'day'),
+        localizer.endOf(day, 'day'),
+        accessors,
+        localizer
       )
-    }, [])
+    )
+
+    return events.map((event, idx) => (
+      <AgendaEventRow
+        key={dayKey + '_' + idx}
+        event={event}
+        idx={idx}
+        dayKey={dayKey}
+        day={day}
+        events={events}
+      />
+    ))
   }
 
   const timeRangeLabel = (day, event) => {
@@ -223,11 +260,7 @@ Agenda.range = (start, { length = DEFAULT_LENGTH, localizer }) => {
   return { start, end }
 }
 
-Agenda.navigate = (
-  date,
-  action,
-  { length = DEFAULT_LENGTH, localizer }
-) => {
+Agenda.navigate = (date, action, { length = DEFAULT_LENGTH, localizer }) => {
   switch (action) {
     case navigate.PREVIOUS:
       return localizer.add(date, -length, 'day')

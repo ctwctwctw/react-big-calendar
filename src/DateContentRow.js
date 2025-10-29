@@ -123,6 +123,7 @@ class DateContentRow extends React.Component {
       isAllDay,
       resizable,
       showAllEvents,
+      hoverComponent,
     } = this.props
 
     if (renderForMeasure) return this.renderDummy()
@@ -147,6 +148,7 @@ class DateContentRow extends React.Component {
       resourceId,
       slotMetrics: metrics,
       resizable,
+      hoverComponent,
     }
 
     return (
@@ -181,7 +183,11 @@ class DateContentRow extends React.Component {
             </div>
           )}
           <ScrollableWeekComponent>
-            <WeekWrapper isAllDay={isAllDay} {...eventRowProps} rtl={this.props.rtl}>
+            <WeekWrapper
+              isAllDay={isAllDay}
+              {...eventRowProps}
+              rtl={this.props.rtl}
+            >
               {levels.map((segs, idx) => (
                 <EventRow key={idx} segments={segs} {...eventRowProps} />
               ))}

@@ -1,0 +1,55 @@
+import { Meta, Story, Canvas } from '@storybook/addon-docs'
+
+<Meta title="props/hoverComponent" />
+
+# hoverComponent
+
+The `hoverComponent` prop allows you to display a custom React component when hovering over calendar events. The popup follows the cursor position and works across all calendar views (Month, Week, Day, and Agenda).
+
+## Usage
+
+```jsx
+const CustomHoverPopup = ({ event }) => (
+  <div style={{
+    backgroundColor: 'white',
+    padding: '12px',
+    borderRadius: '4px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+  }}>
+    <h4>{event.title}</h4>
+    <p>{event.description}</p>
+  </div>
+)
+
+<Calendar
+  hoverComponent={CustomHoverPopup}
+  events={events}
+  // ... other props
+/>
+```
+
+## Props
+
+The hover component receives the following props:
+
+- `event` - The full event object being hovered over
+
+## Features
+
+- **Cursor Following**: The popup's upper-left corner follows the cursor position
+- **All Views**: Works in Month, Week, Day, and Agenda views
+- **Custom Content**: Display any React component with full access to event data
+- **Non-Interactive**: The popup has `pointer-events: none` to avoid interfering with event interactions
+
+## Example
+
+<Canvas>
+  <Story id="props--hover-component" />
+</Canvas>
+
+## Notes
+
+- The popup is positioned using `position: fixed` for reliable cursor following
+- Set `z-index: 1000` to ensure the popup appears above events
+- Touch devices without hover capability will not trigger the popup
+- You can access all custom properties on your events in the hover component
